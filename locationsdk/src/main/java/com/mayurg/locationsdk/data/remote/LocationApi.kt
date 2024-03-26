@@ -2,6 +2,7 @@ package com.mayurg.locationsdk.data.remote
 
 import com.mayurg.locationsdk.data.remote.dto.AuthKeyResponseDto
 import com.mayurg.locationsdk.data.remote.dto.LocationUpdateResponseDto
+import com.mayurg.locationsdk.data.remote.dto.RefreshTokenResponseDto
 import com.mayurg.locationsdk.data.remote.request.LocationUpdateRequest
 import retrofit2.Response
 import retrofit2.http.Body
@@ -14,6 +15,11 @@ internal interface LocationApi {
     suspend fun auth(
         @Header("Authorization") apiKey: String
     ): Response<AuthKeyResponseDto>
+
+    @POST("/auth/refresh")
+    suspend fun refreshToken(
+        @Header("Authorization") refreshToken: String
+    ): Response<RefreshTokenResponseDto>
 
     @POST("/location")
     suspend fun locationUpdate(

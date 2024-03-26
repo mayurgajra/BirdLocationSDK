@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.mayurg.locationsdk.data.local.preferences.AuthPreferencesImpl
+import com.mayurg.locationsdk.data.remote.AuthInterceptor
 import com.mayurg.locationsdk.data.remote.LocationApi
 import com.mayurg.locationsdk.data.repository.DefaultLocationClient
 import com.mayurg.locationsdk.data.repository.LocationApiRepositoryImpl
@@ -15,6 +16,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import kotlin.coroutines.CoroutineContext
@@ -27,14 +29,23 @@ class BirdLocationSDK : CoroutineScope {
         get() = Dispatchers.IO + job
 
 
-    private val locationApi: LocationApi = Retrofit.Builder()
-        .baseUrl(LocationApi.BASE_URL)
-        .addConverterFactory(MoshiConverterFactory.create())
-        .build()
-        .create(LocationApi::class.java)
+    private val okHttpClient: OkHttpClient by lazy {
+        OkHttpClient.Builder().addInterceptor(AuthInterceptor(authPreferences)).build()
+    }
+
+    private val locationApi: LocationApi by lazy {
+        Retrofit.Builder()
+            .baseUrl(LocationApi.BASE_URL)
+            .addConverterFactory(MoshiConverterFactory.create())
+            .client(okHttpClient)
+            .build()
+            .create(LocationApi::class.java)
+    }
 
     private lateinit var authSharedPrefs: SharedPreferences
-    private lateinit var authPreferences: AuthPreferencesImpl
+
+    private lateinit
+    var authPreferences: AuthPreferencesImpl
     private lateinit var locationRepository: LocationApiRepositoryImpl
     private lateinit var authUseCase: AuthUseCase
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
@@ -49,8 +60,10 @@ class BirdLocationSDK : CoroutineScope {
         authPreferences = AuthPreferencesImpl(authSharedPrefs)
         locationRepository = LocationApiRepositoryImpl(locationApi, authPreferences)
         authUseCase = AuthUseCase(locationRepository)
-        locationUpdateTimelyUpdateUseCase = LocationUpdateTimelyUpdateUseCase(defaultLocationClient, locationRepository)
-        locationUpdateOnceUseCase = LocationUpdateOnceUseCase(defaultLocationClient, locationRepository)
+        locationUpdateTimelyUpdateUseCase =
+            LocationUpdateTimelyUpdateUseCase(defaultLocationClient, locationRepository)
+        locationUpdateOnceUseCase =
+            LocationUpdateOnceUseCase(defaultLocationClient, locationRepository)
 
 
         launch {
@@ -65,7 +78,7 @@ class BirdLocationSDK : CoroutineScope {
 
     private fun enableTimelyUpdates(interval: Long) {
         launch {
-            locationUpdateTimelyUpdateUseCase.updateTimelyLocation(this,interval)
+            locationUpdateTimelyUpdateUseCase.updateTimelyLocation(this, interval)
         }
     }
 
