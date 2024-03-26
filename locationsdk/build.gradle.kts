@@ -46,6 +46,7 @@ dependencies {
     implementation(Retrofit.retrofit)
     implementation(Retrofit.okHttpLoggingInterceptor)
     implementation(Retrofit.moshiConverter)
+    implementation(Retrofit.moshiAdapter)
 
     // Location Services
     implementation(Location.gmsLocation)

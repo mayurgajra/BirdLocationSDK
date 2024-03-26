@@ -13,6 +13,8 @@ import com.mayurg.locationsdk.domain.use_case.AuthUseCase
 import com.mayurg.locationsdk.domain.use_case.LocationUpdateOnceUseCase
 import com.mayurg.locationsdk.domain.use_case.LocationUpdateTimelyUpdateUseCase
 import com.mayurg.locationsdk.utils.Result.Failure
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -35,10 +37,15 @@ class BirdLocationSDK : CoroutineScope {
         OkHttpClient.Builder().addInterceptor(AuthInterceptor(authPreferences)).build()
     }
 
+    private val moshi = Moshi.Builder()
+        .add(KotlinJsonAdapterFactory())
+        .build()
+        .let { MoshiConverterFactory.create(it) }
+
     private val locationApi: LocationApi by lazy {
         Retrofit.Builder()
             .baseUrl(LocationApi.BASE_URL)
-            .addConverterFactory(MoshiConverterFactory.create())
+            .addConverterFactory(moshi)
             .client(okHttpClient)
             .build()
             .create(LocationApi::class.java)

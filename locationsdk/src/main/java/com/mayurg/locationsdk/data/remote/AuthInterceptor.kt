@@ -2,6 +2,8 @@ package com.mayurg.locationsdk.data.remote
 
 import com.mayurg.locationsdk.data.local.preferences.AuthPreferencesImpl
 import com.mayurg.locationsdk.data.remote.dto.RefreshTokenResponseDto
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
@@ -25,9 +27,14 @@ internal class AuthInterceptor(
 
             val refreshToken = "Bearer ${authPreferences.loadRefreshToken()}"
 
+             val moshi = Moshi.Builder()
+                .add(KotlinJsonAdapterFactory())
+                .build()
+                .let { MoshiConverterFactory.create(it) }
+
             val locationApi = Retrofit.Builder()
                 .baseUrl(LocationApi.BASE_URL)
-                .addConverterFactory(MoshiConverterFactory.create())
+                .addConverterFactory(moshi)
                 .build()
                 .create(LocationApi::class.java)
 
