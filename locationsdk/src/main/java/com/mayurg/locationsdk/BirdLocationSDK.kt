@@ -20,6 +20,7 @@ import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
+import timber.log.Timber
 import kotlin.coroutines.CoroutineContext
 
 class BirdLocationSDK : CoroutineScope {
@@ -53,10 +54,14 @@ class BirdLocationSDK : CoroutineScope {
     private lateinit var locationUpdateOnceUseCase: LocationUpdateOnceUseCase
 
     @Throws(IllegalStateException::class)
-    private fun initialize(context: Context, apiKey: String) {
+    private fun initialize(context: Context, apiKey: String, enableLogging: Boolean = false) {
 
         if (apiKey.isBlank()) {
             throw IllegalStateException("API Key cannot be blank")
+        }
+
+        if (enableLogging) {
+            Timber.plant(Timber.DebugTree())
         }
 
 
@@ -115,9 +120,10 @@ class BirdLocationSDK : CoroutineScope {
     companion object {
         private var instance: BirdLocationSDK? = null
 
-        fun initialize(context: Context, apiKey: String) {
+        @Throws(IllegalStateException::class)
+        fun initialize(context: Context, apiKey: String, enableLogging: Boolean = false) {
             instance = BirdLocationSDK().apply {
-                initialize(context, apiKey)
+                initialize(context, apiKey,enableLogging)
             }
         }
 

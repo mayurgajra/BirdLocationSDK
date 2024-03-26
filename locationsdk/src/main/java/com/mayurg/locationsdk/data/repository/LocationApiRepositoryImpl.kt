@@ -1,7 +1,6 @@
 package com.mayurg.locationsdk.data.repository
 
 import android.location.Location
-import android.util.Log
 import com.mayurg.locationsdk.data.remote.LocationApi
 import com.mayurg.locationsdk.data.remote.request.LocationUpdateRequest
 import com.mayurg.locationsdk.domain.model.AuthResult
@@ -11,6 +10,7 @@ import com.mayurg.locationsdk.domain.repository.LocationApiRepository
 import com.mayurg.locationsdk.utils.Result
 import com.mayurg.locationsdk.utils.Result.Failure
 import com.mayurg.locationsdk.utils.Result.Success
+import timber.log.Timber
 
 internal class LocationApiRepositoryImpl(
     private val locationApi: LocationApi,
@@ -20,7 +20,7 @@ internal class LocationApiRepositoryImpl(
         val result = locationApi.auth("Bearer $apiKey")
 
 
-        Log.d("LocationRepositoryImpl", "auth: $result")
+        Timber.tag("LocationRepositoryImpl").d("auth: $result")
 
         if (!result.isSuccessful) {
             return Failure(result.code(),"Failed to authenticate")
@@ -50,7 +50,7 @@ internal class LocationApiRepositoryImpl(
             )
         )
 
-        Log.d("LocationRepositoryImpl", "updateLocation: $result")
+        Timber.tag("LocationRepositoryImpl").d("updateLocation: $result")
 
         if (!result.isSuccessful) {
             return Failure(result.code(),"Failed to update location")

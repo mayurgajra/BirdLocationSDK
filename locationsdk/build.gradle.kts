@@ -1,4 +1,5 @@
 import com.mayurg.buildsrc.Location
+import com.mayurg.buildsrc.Logging
 import com.mayurg.buildsrc.Retrofit
 
 plugins {
@@ -48,6 +49,8 @@ dependencies {
 
     // Location Services
     implementation(Location.gmsLocation)
+    // logging
+    implementation(Logging.timber)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
