@@ -8,6 +8,9 @@ import com.mayurg.locationsdk.domain.model.AuthResult
 import com.mayurg.locationsdk.domain.model.LocationUpdateResult
 import com.mayurg.locationsdk.domain.preferences.AuthPreferences
 import com.mayurg.locationsdk.domain.repository.LocationApiRepository
+import com.mayurg.locationsdk.utils.Result
+import com.mayurg.locationsdk.utils.Result.Failure
+import com.mayurg.locationsdk.utils.Result.Success
 
 internal class LocationApiRepositoryImpl(
     private val locationApi: LocationApi,
@@ -20,16 +23,16 @@ internal class LocationApiRepositoryImpl(
         Log.d("LocationRepositoryImpl", "auth: $result")
 
         if (!result.isSuccessful) {
-            return Result.failure(Exception("Failed to authenticate"))
+            return Failure(result.code(),"Failed to authenticate")
         }
 
-        val authResult = result.body() ?: return Result.failure(Exception("Failed to authenticate"))
+        val authResult = result.body() ?: return Failure(result.code(),"Failed to authenticate")
 
         authPreferences.saveAccessToken(authResult.accessToken)
         authPreferences.saveRefreshToken(authResult.refreshToken)
         authPreferences.saveExpiresAt(authResult.expiresAt)
 
-        return Result.success(
+        return Success(
             AuthResult(
                 accessToken = authResult.accessToken,
                 expiresAt = authResult.expiresAt,
@@ -50,13 +53,13 @@ internal class LocationApiRepositoryImpl(
         Log.d("LocationRepositoryImpl", "updateLocation: $result")
 
         if (!result.isSuccessful) {
-            return Result.failure(Exception("Failed to update location"))
+            return Failure(result.code(),"Failed to update location")
         }
 
         val authResult =
-            result.body() ?: return Result.failure(Exception("Failed to update location"))
+            result.body() ?: return Failure(result.code(),"Failed to update location")
 
-        return Result.success(
+        return Success(
             LocationUpdateResult(
                 message = authResult.message,
             )

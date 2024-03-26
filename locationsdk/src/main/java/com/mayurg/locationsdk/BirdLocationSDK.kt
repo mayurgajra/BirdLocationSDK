@@ -12,6 +12,7 @@ import com.mayurg.locationsdk.data.repository.LocationApiRepositoryImpl
 import com.mayurg.locationsdk.domain.use_case.AuthUseCase
 import com.mayurg.locationsdk.domain.use_case.LocationUpdateOnceUseCase
 import com.mayurg.locationsdk.domain.use_case.LocationUpdateTimelyUpdateUseCase
+import com.mayurg.locationsdk.utils.Result.Failure
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -43,9 +44,7 @@ class BirdLocationSDK : CoroutineScope {
     }
 
     private lateinit var authSharedPrefs: SharedPreferences
-
-    private lateinit
-    var authPreferences: AuthPreferencesImpl
+    private lateinit var authPreferences: AuthPreferencesImpl
     private lateinit var locationRepository: LocationApiRepositoryImpl
     private lateinit var authUseCase: AuthUseCase
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
@@ -53,7 +52,14 @@ class BirdLocationSDK : CoroutineScope {
     private lateinit var locationUpdateTimelyUpdateUseCase: LocationUpdateTimelyUpdateUseCase
     private lateinit var locationUpdateOnceUseCase: LocationUpdateOnceUseCase
 
+    @Throws(IllegalStateException::class)
     private fun initialize(context: Context, apiKey: String) {
+
+        if (apiKey.isBlank()) {
+            throw IllegalStateException("API Key cannot be blank")
+        }
+
+
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
         defaultLocationClient = DefaultLocationClient(context, fusedLocationProviderClient)
         authSharedPrefs = context.getSharedPreferences("auth_shared_prefs", Context.MODE_PRIVATE)
@@ -68,23 +74,37 @@ class BirdLocationSDK : CoroutineScope {
 
         launch {
             val authResult = authUseCase.auth(apiKey)
-            if (authResult.isSuccess) {
-
-            } else {
-
+            if (authResult is Failure) {
+                throw IllegalStateException("${authResult.errorCode}: ${authResult.message}")
             }
         }
     }
 
-    private fun enableTimelyUpdates(interval: Long) {
+    private fun enableTimelyUpdates(
+        interval: Long,
+        onLocationUpdated: (Double, Double) -> Unit = { _, _ -> },
+        onError: (Int, String) -> Unit = { _, _ -> }
+    ) {
         launch {
-            locationUpdateTimelyUpdateUseCase.updateTimelyLocation(this, interval)
+            locationUpdateTimelyUpdateUseCase.updateTimelyLocation(
+                this,
+                interval,
+                onLocationUpdated,
+                onError
+            )
         }
     }
 
-    private fun requestLocationUpdateOnce() {
+    private fun requestLocationUpdateOnce(
+        onLocationUpdated: (Double, Double) -> Unit = { _, _ -> },
+        onError: (Int, String) -> Unit = { _, _ -> }
+    ) {
         launch {
-            locationUpdateOnceUseCase.updateLocationOnce(this)
+            locationUpdateOnceUseCase.updateLocationOnce(
+                this,
+                onLocationUpdated,
+                onError
+            )
         }
     }
 
@@ -101,12 +121,19 @@ class BirdLocationSDK : CoroutineScope {
             }
         }
 
-        fun enableTimelyUpdates(interval: Long) {
-            instance?.enableTimelyUpdates(interval)
+        fun enableTimelyUpdates(
+            interval: Long,
+            onLocationUpdated: (Double, Double) -> Unit = { _, _ -> },
+            onError: (Int, String) -> Unit = { _, _ -> }
+        ) {
+            instance?.enableTimelyUpdates(interval, onLocationUpdated, onError)
         }
 
-        fun requestLocationUpdateOnce() {
-            instance?.requestLocationUpdateOnce()
+        fun requestLocationUpdateOnce(
+            onLocationUpdated: (Double, Double) -> Unit = { _, _ -> },
+            onError: (Int, String) -> Unit = { _, _ -> }
+        ) {
+            instance?.requestLocationUpdateOnce(onLocationUpdated, onError)
         }
 
         fun destroy() {

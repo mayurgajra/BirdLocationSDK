@@ -21,6 +21,8 @@ import com.mayurg.locationsdk.BirdLocationSDK
 
 class MainActivity : ComponentActivity() {
 
+    private val viewModel = MainViewModel()
+
     companion object {
         private const val BUTTON_ID_ONCE = "once"
         private const val BUTTON_ID_TIMELY_UPDATE = "timely_update"
@@ -78,6 +80,21 @@ class MainActivity : ComponentActivity() {
                         }, modifier = Modifier.padding(8.dp)) {
                             Text(text = "Request once")
                         }
+
+                        val resultState = viewModel.state.value
+
+                        if (resultState.isSuccessful) {
+                            Text(
+                                text = "Lat: ${resultState.latitude} \n Long: ${resultState.longitude}",
+                                modifier = Modifier.padding(8.dp)
+                            )
+                        } else if (resultState.error.isNotEmpty() && resultState.errorCode != 0) {
+                            Text(
+                                text = "Code: ${resultState.errorCode} \n Message: ${resultState.error}",
+                                modifier = Modifier.padding(8.dp)
+                            )
+                        }
+
                     }
                 }
             }
@@ -102,11 +119,19 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun enableBirdLocationUpdates() {
-        BirdLocationSDK.enableTimelyUpdates(15000)
+        BirdLocationSDK.enableTimelyUpdates(15000, { lat, long ->
+            viewModel.onLocationUpdate(lat, long)
+        }, { errorCode, errorMessage ->
+            viewModel.onLocationError(errorMessage, errorCode)
+        })
     }
 
     private fun requestLocationOnce() {
-        BirdLocationSDK.requestLocationUpdateOnce()
+        BirdLocationSDK.requestLocationUpdateOnce({ lat, long ->
+            viewModel.onLocationUpdate(lat, long)
+        }, { errorCode, errorMessage ->
+            viewModel.onLocationError(errorMessage, errorCode)
+        })
     }
 
 
