@@ -14,9 +14,5 @@ interface AuthPreferences {
 
     fun loadRefreshToken(): String
 
-    companion object {
-        const val KEY_ACCESS_TOKEN = "access_token"
-        const val KEY_EXPIRES_AT = "expires_at"
-        const val KEY_REFRESH_TOKEN = "refresh_token"
-    }
+
 }

@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,13 +16,14 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
+import com.mayurg.birdlocationsdk.R
 import com.mayurg.birdlocationsdk.ui.theme.BirdLocationSDKTheme
+import com.mayurg.birdlocationsdk.utils.PermissionUtil
 import com.mayurg.locationsdk.BirdLocationSDK
 
 class MainActivity : ComponentActivity() {
 
-    private val viewModel = MainViewModel()
+    private val viewModel: MainViewModel by viewModels()
 
     companion object {
         private const val BUTTON_ID_ONCE = "once"
@@ -69,7 +71,7 @@ class MainActivity : ComponentActivity() {
                                 enableBirdLocationUpdates()
                             }
                         }, modifier = Modifier.padding(8.dp)) {
-                            Text(text = "Enable Timely Location updates")
+                            Text(text = getString(R.string.enable_timely_location_updates))
                         }
 
                         Button(onClick = {
@@ -78,7 +80,7 @@ class MainActivity : ComponentActivity() {
                                 requestLocationOnce()
                             }
                         }, modifier = Modifier.padding(8.dp)) {
-                            Text(text = "Request once")
+                            Text(text = getString(R.string.request_once))
                         }
 
                         val resultState = viewModel.state.value
@@ -94,7 +96,6 @@ class MainActivity : ComponentActivity() {
                                 modifier = Modifier.padding(8.dp)
                             )
                         }
-
                     }
                 }
             }
@@ -102,20 +103,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun checkForLocationPermission(permissionGranted: () -> Unit) {
-        if (ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-        ) {
-            permissionGranted()
-        } else {
-            locationPermissionRequest.launch(
-                arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                )
-            )
-        }
+        PermissionUtil.checkForLocationPermission(this, permissionGranted, locationPermissionRequest)
     }
 
     private fun enableBirdLocationUpdates() {

@@ -7,23 +7,22 @@ import androidx.security.crypto.MasterKey
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.mayurg.locationsdk.data.local.preferences.AuthPreferencesImpl
-import com.mayurg.locationsdk.data.remote.AuthInterceptor
-import com.mayurg.locationsdk.data.remote.LocationApi
+import com.mayurg.locationsdk.data.remote.apis.AuthApi
+import com.mayurg.locationsdk.data.remote.apis.LocationApi
+import com.mayurg.locationsdk.data.remote.interceptors.AuthInterceptor
+import com.mayurg.locationsdk.data.remote.interceptors.TokenRefresher
 import com.mayurg.locationsdk.data.repository.DefaultLocationClient
 import com.mayurg.locationsdk.data.repository.LocationApiRepositoryImpl
 import com.mayurg.locationsdk.domain.use_case.AuthUseCase
 import com.mayurg.locationsdk.domain.use_case.LocationUpdateOnceUseCase
 import com.mayurg.locationsdk.domain.use_case.LocationUpdateTimelyUpdateUseCase
 import com.mayurg.locationsdk.utils.Result.Failure
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import com.mayurg.locationsdk.utils.RetrofitUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
-import retrofit2.Retrofit
-import retrofit2.converter.moshi.MoshiConverterFactory
 import timber.log.Timber
 import kotlin.coroutines.CoroutineContext
 
@@ -35,23 +34,15 @@ class BirdLocationSDK : CoroutineScope {
         get() = Dispatchers.IO + job
 
 
+    private lateinit var tokenRefresher: TokenRefresher
+
     private val okHttpClient: OkHttpClient by lazy {
-        OkHttpClient.Builder().addInterceptor(AuthInterceptor(authPreferences)).build()
+        OkHttpClient.Builder().addInterceptor(AuthInterceptor(tokenRefresher)).build()
     }
 
-    private val moshi = Moshi.Builder()
-        .add(KotlinJsonAdapterFactory())
-        .build()
-        .let { MoshiConverterFactory.create(it) }
 
-    private val locationApi: LocationApi by lazy {
-        Retrofit.Builder()
-            .baseUrl(LocationApi.BASE_URL)
-            .addConverterFactory(moshi)
-            .client(okHttpClient)
-            .build()
-            .create(LocationApi::class.java)
-    }
+    private lateinit var locationApi: LocationApi
+    private lateinit var authApi: AuthApi
 
     private lateinit var masterKey: MasterKey
 
@@ -87,15 +78,19 @@ class BirdLocationSDK : CoroutineScope {
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         )
+
+        locationApi = RetrofitUtils.getRetrofit(okHttpClient).create(LocationApi::class.java)
+        authApi = RetrofitUtils.getRetrofit(okHttpClient).create(AuthApi::class.java)
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
         defaultLocationClient = DefaultLocationClient(context, fusedLocationProviderClient)
         authPreferences = AuthPreferencesImpl(encryptedAuthPrefs)
-        locationRepository = LocationApiRepositoryImpl(locationApi, authPreferences)
+        tokenRefresher = TokenRefresher(authPreferences, locationApi)
+        locationRepository = LocationApiRepositoryImpl(authApi, locationApi, authPreferences)
         authUseCase = AuthUseCase(locationRepository)
         locationUpdateTimelyUpdateUseCase =
-            LocationUpdateTimelyUpdateUseCase(defaultLocationClient, locationRepository)
+            LocationUpdateTimelyUpdateUseCase(defaultLocationClient, locationRepository, this)
         locationUpdateOnceUseCase =
-            LocationUpdateOnceUseCase(defaultLocationClient, locationRepository)
+            LocationUpdateOnceUseCase(defaultLocationClient, locationRepository, this)
 
 
         launch {
@@ -113,7 +108,6 @@ class BirdLocationSDK : CoroutineScope {
     ) {
         launch {
             locationUpdateTimelyUpdateUseCase.updateTimelyLocation(
-                this,
                 interval,
                 onLocationUpdated,
                 onError
@@ -127,7 +121,6 @@ class BirdLocationSDK : CoroutineScope {
     ) {
         launch {
             locationUpdateOnceUseCase.updateLocationOnce(
-                this,
                 onLocationUpdated,
                 onError
             )

@@ -10,23 +10,32 @@ import kotlinx.coroutines.launch
 internal class LocationUpdateOnceUseCase(
     private val locationClient: LocationClient,
     private val locationApiRepository: LocationApiRepository,
+    private val scope: CoroutineScope
 ) {
 
     fun updateLocationOnce(
-        scope: CoroutineScope,
         onLocationUpdated: (Double, Double) -> Unit,
         onError: (Int, String) -> Unit
     ) {
         scope.launch {
-            locationClient.getLocationUpdates(1000L)
-                .first().let { location ->
-                    val result = locationApiRepository.updateLocation(location)
-                    if (result is Result.Success) {
-                        onLocationUpdated(location.latitude, location.longitude)
-                    } else if (result is Result.Failure) {
-                        onError(result.errorCode, result.message)
+            try {
+                locationClient.getLocationUpdates(1000L)
+                    .first().let { location ->
+                        when (val result = locationApiRepository.updateLocation(location)) {
+                            is Result.Success -> {
+                                onLocationUpdated(location.latitude, location.longitude)
+                            }
+                            is Result.Failure -> {
+                                onError(result.errorCode, result.message)
+                            }
+                            else -> {
+                                onError(-1, "Unknown error occurred")
+                            }
+                        }
                     }
-                }
+            } catch (e: Exception) {
+                onError(-1, e.message ?: "Unknown error occurred")
+            }
         }
     }
 
