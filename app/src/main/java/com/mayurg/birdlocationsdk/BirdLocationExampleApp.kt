@@ -7,7 +7,7 @@ class BirdLocationExampleApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        BirdLocationSDK.initialize(this,"xdk8ih3kvw2c66isndihzke5",true)
+        BirdLocationSDK.initialize(this,BuildConfig.BirdLocationSDK_ApiKey,true)
     }
 
     override fun onTerminate() {
