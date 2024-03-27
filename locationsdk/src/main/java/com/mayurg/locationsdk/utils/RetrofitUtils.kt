@@ -8,7 +8,7 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 
 internal object RetrofitUtils {
 
-    private const val BASE_URL = "https://dummy-api-mobile.api.sandbox.bird.one/"
+     const val BASE_URL = "https://dummy-api-mobile.api.sandbox.bird.one/"
 
     fun getRetrofit(okHttpClient: OkHttpClient): Retrofit {
         val moshi = Moshi.Builder()

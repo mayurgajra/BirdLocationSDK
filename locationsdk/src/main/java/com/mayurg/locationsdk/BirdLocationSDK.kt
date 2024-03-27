@@ -79,12 +79,14 @@ class BirdLocationSDK : CoroutineScope {
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         )
 
+        authPreferences = AuthPreferencesImpl(encryptedAuthPrefs)
+        tokenRefresher = TokenRefresher(authPreferences)
+
         locationApi = RetrofitUtils.getRetrofit(okHttpClient).create(LocationApi::class.java)
         authApi = RetrofitUtils.getRetrofit(okHttpClient).create(AuthApi::class.java)
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
         defaultLocationClient = DefaultLocationClient(context, fusedLocationProviderClient)
-        authPreferences = AuthPreferencesImpl(encryptedAuthPrefs)
-        tokenRefresher = TokenRefresher(authPreferences, locationApi)
+
         locationRepository = LocationApiRepositoryImpl(authApi, locationApi, authPreferences)
         authUseCase = AuthUseCase(locationRepository)
         locationUpdateTimelyUpdateUseCase =
