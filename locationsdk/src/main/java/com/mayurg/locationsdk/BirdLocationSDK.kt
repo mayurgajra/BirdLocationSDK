@@ -2,6 +2,8 @@ package com.mayurg.locationsdk
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.mayurg.locationsdk.data.local.preferences.AuthPreferencesImpl
@@ -51,7 +53,10 @@ class BirdLocationSDK : CoroutineScope {
             .create(LocationApi::class.java)
     }
 
-    private lateinit var authSharedPrefs: SharedPreferences
+    private lateinit var masterKey: MasterKey
+
+    private lateinit var encryptedAuthPrefs: SharedPreferences
+
     private lateinit var authPreferences: AuthPreferencesImpl
     private lateinit var locationRepository: LocationApiRepositoryImpl
     private lateinit var authUseCase: AuthUseCase
@@ -72,10 +77,19 @@ class BirdLocationSDK : CoroutineScope {
         }
 
 
+        masterKey = MasterKey.Builder(context)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .build()
+        encryptedAuthPrefs = EncryptedSharedPreferences.create(
+            context,
+            "auth_shared_prefs",
+            masterKey,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
         defaultLocationClient = DefaultLocationClient(context, fusedLocationProviderClient)
-        authSharedPrefs = context.getSharedPreferences("auth_shared_prefs", Context.MODE_PRIVATE)
-        authPreferences = AuthPreferencesImpl(authSharedPrefs)
+        authPreferences = AuthPreferencesImpl(encryptedAuthPrefs)
         locationRepository = LocationApiRepositoryImpl(locationApi, authPreferences)
         authUseCase = AuthUseCase(locationRepository)
         locationUpdateTimelyUpdateUseCase =
@@ -130,7 +144,7 @@ class BirdLocationSDK : CoroutineScope {
         @Throws(IllegalStateException::class)
         fun initialize(context: Context, apiKey: String, enableLogging: Boolean = false) {
             instance = BirdLocationSDK().apply {
-                initialize(context, apiKey,enableLogging)
+                initialize(context, apiKey, enableLogging)
             }
         }
 

@@ -1,3 +1,4 @@
+import com.mayurg.buildsrc.AndroidX
 import com.mayurg.buildsrc.Location
 import com.mayurg.buildsrc.Logging
 import com.mayurg.buildsrc.Retrofit
@@ -52,6 +53,8 @@ dependencies {
     implementation(Location.gmsLocation)
     // logging
     implementation(Logging.timber)
+    // security
+    implementation(AndroidX.security)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

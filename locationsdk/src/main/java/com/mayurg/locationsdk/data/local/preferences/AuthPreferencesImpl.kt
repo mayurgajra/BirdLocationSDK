@@ -6,6 +6,9 @@ import com.mayurg.locationsdk.domain.preferences.AuthPreferences
 class AuthPreferencesImpl(
     private val sharedPreferences: SharedPreferences
 ) : AuthPreferences {
+
+
+
     override fun saveAccessToken(accessToken: String) {
         sharedPreferences.edit()
             .putString(AuthPreferences.KEY_ACCESS_TOKEN, accessToken)
@@ -25,14 +28,14 @@ class AuthPreferencesImpl(
     }
 
     override fun loadAccessToken(): String {
-       return sharedPreferences.getString(AuthPreferences.KEY_ACCESS_TOKEN, "") ?: ""
+        return sharedPreferences.getString(AuthPreferences.KEY_ACCESS_TOKEN, "") ?: ""
     }
 
     override fun loadExpiresAt(): String {
-       return sharedPreferences.getString(AuthPreferences.KEY_EXPIRES_AT, "") ?: ""
+        return sharedPreferences.getString(AuthPreferences.KEY_EXPIRES_AT, "") ?: ""
     }
 
     override fun loadRefreshToken(): String {
-       return sharedPreferences.getString(AuthPreferences.KEY_REFRESH_TOKEN, "") ?: ""
+        return sharedPreferences.getString(AuthPreferences.KEY_REFRESH_TOKEN, "") ?: ""
     }
 }
