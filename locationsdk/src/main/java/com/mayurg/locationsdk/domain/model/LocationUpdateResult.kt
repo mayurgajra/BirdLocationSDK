@@ -1,5 +1,5 @@
 package com.mayurg.locationsdk.domain.model
 
-data class LocationUpdateResult(
+internal data class LocationUpdateResult(
     val message: String
 )

@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
  * @param context: The application context.
  * @param client: An instance of FusedLocationProviderClient to request location updates.
  */
-class DefaultLocationClient(
+internal class DefaultLocationClient(
     private val context: Context,
     private val client: FusedLocationProviderClient
 ): LocationClient {

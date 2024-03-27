@@ -1,6 +1,6 @@
 package com.mayurg.locationsdk.domain.preferences
 
-interface AuthPreferences {
+internal interface AuthPreferences {
 
     fun saveAccessToken(accessToken: String)
 

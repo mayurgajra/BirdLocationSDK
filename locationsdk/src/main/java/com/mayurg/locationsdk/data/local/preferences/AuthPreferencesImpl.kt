@@ -3,7 +3,7 @@ package com.mayurg.locationsdk.data.local.preferences
 import android.content.SharedPreferences
 import com.mayurg.locationsdk.domain.preferences.AuthPreferences
 
-class AuthPreferencesImpl(
+internal class AuthPreferencesImpl(
     private val sharedPreferences: SharedPreferences
 ) : AuthPreferences {
 

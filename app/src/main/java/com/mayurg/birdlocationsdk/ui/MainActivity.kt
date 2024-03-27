@@ -45,6 +45,7 @@ class MainActivity : ComponentActivity() {
             }
 
             permissions.get(Manifest.permission.ACCESS_COARSE_LOCATION) ?: false -> {
+
                 // Only approximate location access granted.
             }
 
