@@ -12,11 +12,30 @@ import com.mayurg.locationsdk.utils.Result.Failure
 import com.mayurg.locationsdk.utils.Result.Success
 import timber.log.Timber
 
+
+/**
+ * `LocationApiRepositoryImpl` is a class that handles the operations related to user authentication and location updates.
+ *
+ * @param authApi: An instance of `AuthApi` to make authentication requests.
+ * @param locationApi: An instance of `LocationApi` to make location update requests.
+ * @param authPreferences: An instance of `AuthPreferences` to store and manage the user's authentication tokens.
+ */
 internal class LocationApiRepositoryImpl(
     private val authApi: AuthApi,
     private val locationApi: LocationApi,
     private val authPreferences: AuthPreferences
 ) : LocationApiRepository {
+
+
+    /**
+     * This function is used to authenticate the user.
+     * It sends the user's API key to the server and receives an authentication result.
+     * If the authentication is successful, it saves the authentication tokens.
+     * If the authentication is not successful, it returns an error message.
+     *
+     * @param apiKey The user's API key.
+     * @return The result of the authentication request.
+     */
     override suspend fun auth(apiKey: String): Result<AuthResult> {
         val result = authApi.auth("Bearer $apiKey")
 
@@ -43,6 +62,15 @@ internal class LocationApiRepositoryImpl(
         )
     }
 
+    /**
+     * This function is used to update the user's location.
+     * It sends the user's latitude and longitude to the server and receives a location update result.
+     * If the location update is successful, it returns a success message.
+     * If the location update is not successful, it returns an error message.
+     *
+     * @param location The user's latitude and longitude.
+     * @return The result of the location update request.
+     */
     override suspend fun updateLocation(location: Pair<Double, Double>): Result<LocationUpdateResult> {
         val result = locationApi.locationUpdate(
             "Bearer ${authPreferences.loadAccessToken()}",

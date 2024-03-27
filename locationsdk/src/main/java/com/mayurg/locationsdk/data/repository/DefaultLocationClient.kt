@@ -15,11 +15,32 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 
+/**
+ * This class is responsible for providing location updates.
+ * It uses the FusedLocationProviderClient to request location updates.
+ * The location updates are provided as a Flow of Pair of latitude and longitude.
+ *
+ * @param context: The application context.
+ * @param client: An instance of FusedLocationProviderClient to request location updates.
+ */
 class DefaultLocationClient(
     private val context: Context,
     private val client: FusedLocationProviderClient
 ): LocationClient {
 
+    /**
+     * This function returns a Flow of Pair of latitude and longitude representing the location updates.
+     * It first checks if the location permission is granted and if the GPS is enabled.
+     * Then, it creates a LocationRequest and a LocationCallback.
+     * The LocationCallback sends the location updates to the Flow.
+     * The function requests location updates from the FusedLocationProviderClient with the LocationRequest and LocationCallback.
+     * When the Flow is collected, the location updates are requested.
+     * When the Flow is not collected anymore, the location updates are removed.
+     *
+     * @param interval: The desired interval for location updates, in milliseconds.
+     * @return A Flow of Pair of latitude and longitude representing the location updates.
+     * @throws LocationClient.LocationException If the location permission is not granted or the GPS is disabled.
+     */
     @SuppressLint("MissingPermission")
     override fun getLocationUpdates(interval: Long): Flow<Pair<Double,Double>> {
         return callbackFlow {
@@ -57,6 +78,13 @@ class DefaultLocationClient(
         }
     }
 
+    /**
+     * This function creates a LocationRequest with the desired interval.
+     * The fastest interval is also set to the desired interval.
+     *
+     * @param interval: The desired interval for location updates, in milliseconds.
+     * @return A LocationRequest with the desired interval.
+     */
     private fun createLocationRequest(interval: Long): LocationRequest {
         return LocationRequest.create()
             .setInterval(interval)

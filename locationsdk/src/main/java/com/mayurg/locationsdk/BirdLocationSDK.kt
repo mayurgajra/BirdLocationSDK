@@ -26,6 +26,35 @@ import okhttp3.OkHttpClient
 import timber.log.Timber
 import kotlin.coroutines.CoroutineContext
 
+/**
+ * BirdLocationSDK is a class that provides location services.
+ * It uses the CoroutineScope to handle asynchronous tasks.
+ *
+ * This class is a singleton, meaning there can only be one instance of it at any given time.
+ * It is initialized with an API key and a context, and can optionally enable logging.
+ *
+ * It provides methods to request location updates either once or at regular intervals.
+ * It also provides a method to destroy the instance when it is no longer needed.
+ *
+ * Example usage:
+ *
+ * 1) Initialize the SDK in Application class
+ * BirdLocationSDK.initialize(context, "your_api_key", true)
+ *
+ * 2) Request a single location update
+ * BirdLocationSDK.requestLocationUpdateOnce { lat, lon ->
+ * println("Location updated: $lat, $lon")
+ * }
+ *
+ * 3) Request location updates every 5 minutes
+ * BirdLocationSDK.enableTimelyUpdates(5 * 60 * 1000) { lat, lon ->
+ * println("Location updated: $lat, $lon")
+ * }
+ *
+ * 4) When done, destroy the instance
+ * BirdLocationSDK.destroy()
+ *
+ * */
 class BirdLocationSDK : CoroutineScope {
 
     private val job = Job()
@@ -136,6 +165,11 @@ class BirdLocationSDK : CoroutineScope {
     companion object {
         private var instance: BirdLocationSDK? = null
 
+        /** This function initializes the SDK with the provided context, API key, and logging option
+         * It creates a new instance of the SDK. Must be called before any other function.
+         *
+         * throws IllegalStateException if the API key is blank or invalid
+         */
         @Throws(IllegalStateException::class)
         fun initialize(context: Context, apiKey: String, enableLogging: Boolean = false) {
             instance = BirdLocationSDK().apply {
@@ -143,6 +177,14 @@ class BirdLocationSDK : CoroutineScope {
             }
         }
 
+        /**
+         * This function enables location updates at regular intervals
+         *
+         *It takes an interval in milliseconds, and two optional callback functions
+         *
+         *The first callback function is called with the latitude and longitude each time the location is updated
+         *The second callback function is called with an error code and message if an error occurs
+         */
         fun enableTimelyUpdates(
             interval: Long,
             onLocationUpdated: (Double, Double) -> Unit = { _, _ -> },
@@ -151,6 +193,15 @@ class BirdLocationSDK : CoroutineScope {
             instance?.enableTimelyUpdates(interval, onLocationUpdated, onError)
         }
 
+
+        /**
+         * This function requests a single location update
+         *
+         * It takes two optional callback functions
+         *
+         * The first callback function is called with the latitude and longitude when the location is updated
+         * The second callback function is called with an error code and message if an error occurs
+         */
         fun requestLocationUpdateOnce(
             onLocationUpdated: (Double, Double) -> Unit = { _, _ -> },
             onError: (Int, String) -> Unit = { _, _ -> }
