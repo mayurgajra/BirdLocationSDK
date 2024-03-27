@@ -2,7 +2,6 @@ package com.mayurg.locationsdk.data.repository
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.location.Location
 import android.location.LocationManager
 import android.os.Looper
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -22,7 +21,7 @@ class DefaultLocationClient(
 ): LocationClient {
 
     @SuppressLint("MissingPermission")
-    override fun getLocationUpdates(interval: Long): Flow<Location> {
+    override fun getLocationUpdates(interval: Long): Flow<Pair<Double,Double>> {
         return callbackFlow {
             if(!context.hasLocationPermission()) {
                 throw LocationClient.LocationException("Missing location permission")
@@ -41,7 +40,7 @@ class DefaultLocationClient(
                 override fun onLocationResult(result: LocationResult) {
                     super.onLocationResult(result)
                     result.locations.lastOrNull()?.let { location ->
-                        launch { send(location) }
+                        launch { send(Pair(location.latitude,location.longitude)) }
                     }
                 }
             }

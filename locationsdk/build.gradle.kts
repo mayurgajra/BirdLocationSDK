@@ -2,6 +2,7 @@ import com.mayurg.buildsrc.AndroidX
 import com.mayurg.buildsrc.Location
 import com.mayurg.buildsrc.Logging
 import com.mayurg.buildsrc.Retrofit
+import com.mayurg.buildsrc.Testing
 
 plugins {
     alias(libs.plugins.androidLibrary)
@@ -57,6 +58,9 @@ dependencies {
     implementation(AndroidX.security)
 
     testImplementation(libs.junit)
+    testImplementation(Testing.mockitoCore)
+    testImplementation(Testing.coroutinesTest)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(Testing.mockitoAndroid)
 }

@@ -1,6 +1,5 @@
 package com.mayurg.locationsdk.domain.use_case
 
-import android.location.Location
 import com.mayurg.locationsdk.domain.repository.LocationApiRepository
 import com.mayurg.locationsdk.domain.repository.LocationClient
 import com.mayurg.locationsdk.utils.Result
@@ -31,14 +30,14 @@ internal class LocationUpdateTimelyUpdateUseCase(
     }
 
     private fun handleUpdateLocationResult(
-        location: Location,
+        location: Pair<Double, Double>,
         onLocationUpdated: (Double, Double) -> Unit,
         onError: (Int, String) -> Unit
     ) {
         scope.launch {
             val result = locationApiRepository.updateLocation(location)
             if (result is Result.Success) {
-                onLocationUpdated(location.latitude, location.longitude)
+                onLocationUpdated(location.first, location.second)
             } else if (result is Result.Failure) {
                 onError(result.errorCode, result.message)
             }

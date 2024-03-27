@@ -1,6 +1,5 @@
 package com.mayurg.locationsdk.data.repository
 
-import android.location.Location
 import com.mayurg.locationsdk.data.remote.apis.AuthApi
 import com.mayurg.locationsdk.data.remote.apis.LocationApi
 import com.mayurg.locationsdk.data.remote.request.LocationUpdateRequest
@@ -44,12 +43,12 @@ internal class LocationApiRepositoryImpl(
         )
     }
 
-    override suspend fun updateLocation(location: Location): Result<LocationUpdateResult> {
+    override suspend fun updateLocation(location: Pair<Double, Double>): Result<LocationUpdateResult> {
         val result = locationApi.locationUpdate(
             "Bearer ${authPreferences.loadAccessToken()}",
             LocationUpdateRequest(
-                latitude = location.latitude,
-                longitude = location.longitude
+                latitude = location.first,
+                longitude = location.second
             )
         )
 

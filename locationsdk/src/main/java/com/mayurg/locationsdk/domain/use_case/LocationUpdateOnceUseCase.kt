@@ -23,7 +23,7 @@ internal class LocationUpdateOnceUseCase(
                     .first().let { location ->
                         when (val result = locationApiRepository.updateLocation(location)) {
                             is Result.Success -> {
-                                onLocationUpdated(location.latitude, location.longitude)
+                                onLocationUpdated(location.first, location.second)
                             }
                             is Result.Failure -> {
                                 onError(result.errorCode, result.message)
