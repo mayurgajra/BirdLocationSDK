@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">BirdLocationSDK</string>
+    <string name="enable_timely_location_updates">Enable Timely Location updates</string>
+    <string name="request_once">Request Once</string>
 </resources>

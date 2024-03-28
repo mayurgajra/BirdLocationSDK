@@ -3,9 +3,16 @@ plugins {
     alias(libs.plugins.jetbrainsKotlinAndroid)
 }
 
+val birdLocationSDK_ApiKey: String = findProperty("BirdLocationSDK_ApiKey") as String
+
+
 android {
     namespace = "com.mayurg.birdlocationsdk"
     compileSdk = 34
+
+    buildFeatures {
+        buildConfig = true
+    }
 
     defaultConfig {
         applicationId = "com.mayurg.birdlocationsdk"
@@ -15,6 +22,7 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "BirdLocationSDK_ApiKey", birdLocationSDK_ApiKey)
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -51,6 +59,7 @@ android {
 
 dependencies {
 
+    implementation(project(":locationsdk"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
