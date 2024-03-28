@@ -108,7 +108,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun enableBirdLocationUpdates() {
-        BirdLocationSDK.enableTimelyUpdates(15000, { lat, long ->
+        BirdLocationSDK.enableTimelyUpdates(interval = 15000, { lat, long ->
             viewModel.onLocationUpdate(lat, long)
         }, { errorCode, errorMessage ->
             viewModel.onLocationError(errorMessage, errorCode)
